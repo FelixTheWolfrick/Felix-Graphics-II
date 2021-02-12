@@ -33,8 +33,13 @@
 
 layout (location = 0) out vec4 rtFragColor;
 
+in vec2 vTexcoord;
+uniform vec4 uColor;
+uniform sampler2D uImage00;
+
 void main()
 {
 	// DUMMY OUTPUT: all fragments are OPAQUE YELLOW
-	rtFragColor = vec4(1.0, 1.0, 0.0, 1.0);
+	//rtFragColor = vec4(1.0, 1.0, 0.0, 1.0);
+	rtFragColor = uColor * texture2D(uImage00, vTexcoord);
 }

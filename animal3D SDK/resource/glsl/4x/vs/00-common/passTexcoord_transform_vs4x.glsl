@@ -32,6 +32,10 @@
 //	-> assign attribute to varying
 
 layout (location = 0) in vec4 aPosition;
+layout (location = 8) in vec2 aTexcoord;
+
+uniform mat4 uMVP; //model-view-projection matrix
+out vec2 vTexcoord;
 
 flat out int vVertexID;
 flat out int vInstanceID;
@@ -39,7 +43,10 @@ flat out int vInstanceID;
 void main()
 {
 	// DUMMY OUTPUT: directly assign input position to output position
-	gl_Position = aPosition;
+	//gl_Position = aPosition;
+
+	gl_Position = uMVP * aPosition;
+	vTexcoord = aTexcoord;
 
 	vVertexID = gl_VertexID;
 	vInstanceID = gl_InstanceID;
