@@ -24,7 +24,9 @@
 
 #version 450
 
-// ****DONE?:
+//https://learnopengl.com/Advanced-Lighting/Bloom
+
+// ****DONE:
 //	-> declare texture coordinate varying and input texture
 //	-> declare sampling axis uniform (see render code for clue)
 //	-> declare Gaussian blur function that samples along one axis

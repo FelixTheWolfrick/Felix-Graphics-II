@@ -24,7 +24,9 @@
 
 #version 450
 
-// ****TO-DO:
+//https://learnopengl.com/Advanced-Lighting/Bloom
+
+// ****DONE:
 //	-> declare texture coordinate varying and input texture
 //	-> implement relative luminance function
 //	-> implement simple "tone mapping" such that the brightest areas of the 
