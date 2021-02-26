@@ -31,8 +31,21 @@
 
 layout (location = 0) out vec4 rtFragColor;
 
+// textures 
+layout (binding = 0) uniform sampler2D sceneTexture;
+layout (binding = 1) uniform sampler2D vBlur2;
+layout (binding = 2) uniform sampler2D vBlur4;
+layout (binding = 3) uniform sampler2D vBlur8;
+
+in vec4 vTexcoord_atlas;
+
 void main()
 {
 	// DUMMY OUTPUT: all fragments are OPAQUE PURPLE
-	rtFragColor = vec4(0.5, 0.0, 1.0, 1.0);
+	//rtFragColor = vec4(0.5, 0.0, 1.0, 1.0);
+
+	vec4 testBlend = 1.0 - (1.0 - texture2D(sceneTexture, vTexcoord_atlas.xy)) * (1.0 - texture2D(vBlur2, vTexcoord_atlas.xy)) 
+	* (1.0 - texture2D(vBlur4, vTexcoord_atlas.xy)) * (1.0 - texture2D(vBlur8, vTexcoord_atlas.xy));
+
+	rtFragColor = testBlend;
 }

@@ -24,16 +24,50 @@
 
 #version 450
 
-// ****TO-DO:
+// ****DONE?:
 //	-> declare texture coordinate varying and input texture
 //	-> declare sampling axis uniform (see render code for clue)
 //	-> declare Gaussian blur function that samples along one axis
 //		(hint: the efficiency of this is described in class)
 
+in vec4 vTexcoord_atlas;
+
+uniform vec2 uAxis;
+
 layout (location = 0) out vec4 rtFragColor;
+layout (binding = 0) uniform sampler2D hdr_image; // texture 
+
+uniform float weight[5] = float[] (0.227027, 0.1945946, 0.1216216, 0.054054, 0.016216);
 
 void main()
 {
 	// DUMMY OUTPUT: all fragments are OPAQUE AQUA
-	rtFragColor = vec4(0.0, 1.0, 0.5, 1.0);
+	//rtFragColor = vec4(0.0, 1.0, 0.5, 1.0);
+
+	// blurring along an axis:
+	//  -> sample neighboring pizels, output weighted average
+	//      -> coordinate offset by some amount (add/sub displacement vector)
+	//          -> example: horizontal, dv = vec2(1 / resolution (width), 0) // horizontal so only care for x coordinate so y is 0, uv of 1 means offset by an entire texture
+	//          -> example: vertical, dv = vec2(0, 1 / resolution (height)) // vertical so only care for y coordinate so y is 0, uv of 1 means offset by an entire texture
+
+	vec2 textelSize = 1.0 / textureSize(hdr_image, 0);
+	vec3 results = texture(hdr_image, vTexcoord_atlas.xy).rgb * weight[0];
+
+	if (uAxis.x == 0.0)
+	{
+		for (int i = 1; i < weight.length(); i++)
+		{
+			results += texture(hdr_image, vTexcoord_atlas.xy + vec2(0.0, textelSize.y * i)).rgb * weight[i];
+			results += texture(hdr_image, vTexcoord_atlas.xy - vec2(0.0, textelSize.y * i)).rgb * weight[i];
+		}
+	}
+	else if(uAxis.y == 0.0)
+	{
+		for (int i = 1; i < weight.length(); i++){
+			results += texture(hdr_image, vTexcoord_atlas.xy + vec2(textelSize.x * i, 0.0)).rgb * weight[i];
+			results += texture(hdr_image, vTexcoord_atlas.xy - vec2(textelSize.x * i, 0.0)).rgb * weight[i];
+		}
+	}
+
+	rtFragColor = vec4(results, 1.0);
 }

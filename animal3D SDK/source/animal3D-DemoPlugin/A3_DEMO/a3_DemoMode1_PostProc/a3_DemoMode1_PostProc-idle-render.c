@@ -230,15 +230,25 @@ void a3postproc_render(a3_DemoState const* demoState, a3_DemoMode1_PostProc cons
 		1,
 	};
 
-	// ****TO-DO:
+	// ****DONE:
 	//	-> uncomment FBO target array
 	//	-> add pointer to target FBO for each pass
 	//		(hint: choose the most relevant one for each; all are unique)
-/*	// framebuffer target for each pass
+    // framebuffer target for each pass
 	const a3_Framebuffer* writeFBO[postproc_renderPass_max] = {
-		demoState->fbo_d32,
-		//...
-	};*/
+		demoState->fbo_d32, // shadow map
+		demoState->fbo_c16x4_d24s8, // scene
+		demoState->fbo_c16_szHalf, // half bright
+		demoState->fbo_c16_szHalf + 1, // half bright first axis (Horizontal)
+		demoState->fbo_c16_szHalf + 2, // half bright second axis (Vertical)
+		demoState->fbo_c16_szQuarter, // quarter bright
+		demoState->fbo_c16_szQuarter + 1, // quarter bright first axis (Horizontal)
+		demoState->fbo_c16_szQuarter + 2, // quarter bright second axis (Vertical)
+		demoState->fbo_c16_szEighth, // eighth bright
+		demoState->fbo_c16_szEighth + 1, // eighth bright first axis (Horizontal)
+		demoState->fbo_c16_szEighth + 2, // eighth bright second axis (Vertical)
+		demoState->fbo_c16x4 // composite
+	};
 
 	// target info
 	a3_DemoMode1_PostProc_RenderMode const renderMode = demoMode->renderMode;
@@ -261,7 +271,7 @@ void a3postproc_render(a3_DemoState const* demoState, a3_DemoMode1_PostProc cons
 	};
 
 	// pixel size and effect axis
-	//a3vec2 pixelSize = a3vec2_one;
+    a3vec2 pixelSize = a3vec2_one;
 
 
 	//-------------------------------------------------------------------------
@@ -271,18 +281,18 @@ void a3postproc_render(a3_DemoState const* demoState, a3_DemoMode1_PostProc cons
 	//		- clear depth buffer
 	//		- render shapes using pass-thru shaders
 
-	// ****TO-DO:
+	// ****DONE:
 	//	-> uncomment shadow pass FBO binding
-/*	// bind scene FBO
+	// bind scene FBO
 	currentWriteFBO = writeFBO[postproc_renderPassShadow]; //demoState->fbo_d32
-	a3framebufferActivate(currentWriteFBO);*/
+	a3framebufferActivate(currentWriteFBO);
 	glClear(GL_DEPTH_BUFFER_BIT);
 
 	currentDemoProgram = demoState->prog_transform;
 	a3shaderProgramActivate(currentDemoProgram->program);
 	glDisable(GL_BLEND);
 
-	// shadow capture on inverted geometry
+	// shadow capture on inverted geometry (shadow pass drawing things inside out)
 	glCullFace(GL_FRONT);
 	for (currentSceneObject = demoMode->obj_sphere, endSceneObject = demoMode->obj_ground;
 		currentSceneObject <= endSceneObject; ++currentSceneObject)
@@ -308,11 +318,11 @@ void a3postproc_render(a3_DemoState const* demoState, a3_DemoMode1_PostProc cons
 	//		- render shapes using appropriate shaders
 	//		- capture color and depth
 
-	// ****TO-DO:
+	// ****DONE:
 	//	-> uncomment scene pass FBO binding
-/*	// bind scene FBO
+	// bind scene FBO
 	currentWriteFBO = writeFBO[postproc_renderPassScene]; //demoState->fbo_c16x4_d24s8
-	a3framebufferActivate(currentWriteFBO);*/
+	a3framebufferActivate(currentWriteFBO);
 
 	// clear buffers
 	if (demoState->displaySkybox)
@@ -353,11 +363,15 @@ void a3postproc_render(a3_DemoState const* demoState, a3_DemoMode1_PostProc cons
 		a3shaderUniformSendDouble(a3unif_single, currentDemoProgram->uTime, 1, &demoState->timer_display->totalTime);
 
 	// send lighting uniforms and bind blocks where appropriate
-	a3shaderUniformBufferActivate(demoState->ubo_transform, demoProg_blockTransformStack);
+	a3shaderUniformBufferActivate(demoState->ubo_transform, demoProg_blockTransformStack); // ubo = uniform buffer object
 	a3shaderUniformBufferActivate(demoState->ubo_light, demoProg_blockLight);
 
 	// select pipeline algorithm
 	glDisable(GL_BLEND);
+
+	// ****DONE: (same shadow map for all objects)
+	//	-> uncomment shadow map bind
+	a3framebufferBindDepthTexture(writeFBO[postproc_renderPassShadow], a3tex_unit06); //demoState->fbo_d32
 
 	// forward shading algorithms
 	for (currentSceneObject = demoMode->obj_sphere, endSceneObject = demoMode->obj_ground;
@@ -368,9 +382,6 @@ void a3postproc_render(a3_DemoState const* demoState, a3_DemoMode1_PostProc cons
 		// activate texture maps
 		a3textureActivate(texture_dm[j], a3tex_unit00);
 		a3textureActivate(texture_sm[j], a3tex_unit01);
-		// ****TO-DO:
-		//	-> uncomment shadow map bind
-	/*	a3framebufferBindDepthTexture(writeFBO[postproc_renderPassShadow], a3tex_unit06); //demoState->fbo_d32*/
 
 		// send other data
 		a3shaderUniformSendInt(a3unif_single, currentDemoProgram->uIndex, 1, &j);
@@ -408,17 +419,107 @@ void a3postproc_render(a3_DemoState const* demoState, a3_DemoMode1_PostProc cons
 	//		-> blur in other direction (e.g. vertical)
 	//	-> composite original scene result with final blur iteration results
 
-	// ****TO-DO:
+	// ****DONE?:
 	//	-> uncomment first post-processing pass
 	//	-> implement bloom pipeline following the above algorithm
 	//		(hint: this is the entirety of the first bright pass)
-/*	currentDemoProgram = demoState->prog_postBright;
+
+	//Bright Pass Half
+	currentDemoProgram = demoState->prog_postBright; 
+	a3shaderProgramActivate(currentDemoProgram->program); 
+	a3framebufferBindColorTexture(currentWriteFBO, a3tex_unit00, 0); 
+	currentWriteFBO = writeFBO[postproc_renderPassBright2]; 
+	a3framebufferActivate(currentWriteFBO); 
+	a3vertexDrawableRenderActive(); 
+
+	currentDemoProgram = demoState->prog_postBlur;
 	a3shaderProgramActivate(currentDemoProgram->program);
+	pixelSize.x = 1.0f / (float)currentWriteFBO->frameWidth;
+	pixelSize.y = 0.0f;
+	a3shaderUniformSendFloat(a3unif_vec2, currentDemoProgram->uAxis, 1, pixelSize.v);
 	a3framebufferBindColorTexture(currentWriteFBO, a3tex_unit00, 0);
-	currentWriteFBO = writeFBO[postproc_renderPassBright2];
+	currentWriteFBO = writeFBO[postproc_renderPassBlurH2]; // Horizontal first
 	a3framebufferActivate(currentWriteFBO);
 	a3vertexDrawableRenderActive();
-	//...*/
+
+	//currentDemoProgram = demoState->prog_postBlur;
+	//a3shaderProgramActivate(currentDemoProgram->program);
+	pixelSize.x = 0.0f;
+	pixelSize.y = 1.0f / (float)currentWriteFBO->frameHeight;
+	a3shaderUniformSendFloat(a3unif_vec2, currentDemoProgram->uAxis, 1, pixelSize.v);
+	a3framebufferBindColorTexture(currentWriteFBO, a3tex_unit00, 0);
+	currentWriteFBO = writeFBO[postproc_renderPassBlurV2]; // Vertical first
+	a3framebufferActivate(currentWriteFBO);
+	a3vertexDrawableRenderActive();
+
+	//Bright Pass Quarter
+	currentDemoProgram = demoState->prog_postBright;
+	a3shaderProgramActivate(currentDemoProgram->program);
+	a3framebufferBindColorTexture(currentWriteFBO, a3tex_unit00, 0);
+	currentWriteFBO = writeFBO[postproc_renderPassBright4];
+	a3framebufferActivate(currentWriteFBO);
+	a3vertexDrawableRenderActive();
+
+	currentDemoProgram = demoState->prog_postBlur;
+	a3shaderProgramActivate(currentDemoProgram->program);
+	pixelSize.x = 1.0f / (float)currentWriteFBO->frameWidth;
+	pixelSize.y = 0.0f;
+	a3shaderUniformSendFloat(a3unif_vec2, currentDemoProgram->uAxis, 1, pixelSize.v);
+	a3framebufferBindColorTexture(currentWriteFBO, a3tex_unit00, 0);
+	currentWriteFBO = writeFBO[postproc_renderPassBlurH4]; // Horizontal first
+	a3framebufferActivate(currentWriteFBO);
+	a3vertexDrawableRenderActive();
+
+
+	//currentDemoProgram = demoState->prog_postBlur;
+	//a3shaderProgramActivate(currentDemoProgram->program);
+	pixelSize.x = 0.0f;
+	pixelSize.y = 1.0f / (float)currentWriteFBO->frameHeight;
+	a3shaderUniformSendFloat(a3unif_vec2, currentDemoProgram->uAxis, 1, pixelSize.v);
+	a3framebufferBindColorTexture(currentWriteFBO, a3tex_unit00, 0);
+	currentWriteFBO = writeFBO[postproc_renderPassBlurV4]; // Vertical first
+	a3framebufferActivate(currentWriteFBO);
+	a3vertexDrawableRenderActive();
+
+	//Bright Pass Eighth
+	currentDemoProgram = demoState->prog_postBright;
+	a3shaderProgramActivate(currentDemoProgram->program);
+	a3framebufferBindColorTexture(currentWriteFBO, a3tex_unit00, 0);
+	currentWriteFBO = writeFBO[postproc_renderPassBright8];
+	a3framebufferActivate(currentWriteFBO);
+	a3vertexDrawableRenderActive();
+
+	currentDemoProgram = demoState->prog_postBlur;
+	a3shaderProgramActivate(currentDemoProgram->program);
+	pixelSize.x = 1.0f / (float)currentWriteFBO->frameWidth;
+	pixelSize.y = 0.0f;
+	a3shaderUniformSendFloat(a3unif_vec2, currentDemoProgram->uAxis, 1, pixelSize.v);
+	a3framebufferBindColorTexture(currentWriteFBO, a3tex_unit00, 0);
+	currentWriteFBO = writeFBO[postproc_renderPassBlurH8]; // Horizontal first
+	a3framebufferActivate(currentWriteFBO);
+	a3vertexDrawableRenderActive();
+
+
+	//currentDemoProgram = demoState->prog_postBlur;
+	//a3shaderProgramActivate(currentDemoProgram->program);
+	pixelSize.x = 0.0f;
+	pixelSize.y = 1.0f / (float)currentWriteFBO->frameHeight;
+	a3shaderUniformSendFloat(a3unif_vec2, currentDemoProgram->uAxis, 1, pixelSize.v);
+	a3framebufferBindColorTexture(currentWriteFBO, a3tex_unit00, 0);
+	currentWriteFBO = writeFBO[postproc_renderPassBlurV8]; // Vertical first
+	a3framebufferActivate(currentWriteFBO);
+	a3vertexDrawableRenderActive();
+
+	// Blend
+	currentDemoProgram = demoState->prog_postBlend;
+	a3shaderProgramActivate(currentDemoProgram->program);
+	a3framebufferBindColorTexture(writeFBO[postproc_renderPassScene], a3tex_unit00, 0);
+	a3framebufferBindColorTexture(writeFBO[postproc_renderPassBlurV2], a3tex_unit01, 0);
+	a3framebufferBindColorTexture(writeFBO[postproc_renderPassBlurV4], a3tex_unit02, 0);
+	a3framebufferBindColorTexture(writeFBO[postproc_renderPassBlurV8], a3tex_unit03, 0);
+	currentWriteFBO = writeFBO[postproc_renderPassDisplay];
+	a3framebufferActivate(currentWriteFBO);
+	a3vertexDrawableRenderActive();
 
 
 	//-------------------------------------------------------------------------
@@ -426,18 +527,20 @@ void a3postproc_render(a3_DemoState const* demoState, a3_DemoMode1_PostProc cons
 	//	- finally draw to back buffer
 	//	- select display texture(s)
 	//	- activate final pass program
-	//	- draw final FSQ
+	//	- draw final FSQ (full screen quad)
 
-	// revert to back buffer and disable depth testing
+	// revert to back buffer and disable depth testing (deactivate any active framebuffer)
 	a3framebufferDeactivateSetViewport(a3fbo_depthDisable,
 		-demoState->frameBorder, -demoState->frameBorder, demoState->frameWidth, demoState->frameHeight);
 
-	// ****TO-DO:
+	// ****DONE:
 	//	-> uncomment display FBO selection
-/*	// select framebuffer to display based on mode
+	// select framebuffer to display based on mode
 	currentDisplayFBO = writeFBO[renderPass];
 
-	// select output to display
+	// activae a plane with a frame buffer texture on it  (capture pass as a texture (framebuffer), draw rectangle on backbuffer with texture on)
+
+	// select output to display (select image and display)
 	switch (renderPass)
 	{
 	case postproc_renderPassShadow:
@@ -450,25 +553,33 @@ void a3postproc_render(a3_DemoState const* demoState, a3_DemoMode1_PostProc cons
 			a3framebufferBindDepthTexture(currentDisplayFBO, a3tex_unit00);
 		break;
 	case postproc_renderPassDisplay:
-	case postproc_renderPassBright2:
-	case postproc_renderPassBlurH2:
-	case postproc_renderPassBlurV2:
-	case postproc_renderPassBright4:
-	case postproc_renderPassBlurH4:
-	case postproc_renderPassBlurV4:
-	case postproc_renderPassBright8:
-	case postproc_renderPassBlurH8:
-	case postproc_renderPassBlurV8:
-		a3framebufferBindColorTexture(currentDisplayFBO, a3tex_unit00, renderTarget);
 		break;
-	}*/
+	case postproc_renderPassBright2:
+		break;
+	case postproc_renderPassBlurH2:
+		break;
+	case postproc_renderPassBlurV2:
+		break;
+	case postproc_renderPassBright4:
+		break;
+	case postproc_renderPassBlurH4:
+		break;
+	case postproc_renderPassBlurV4:
+		break;
+	case postproc_renderPassBright8:
+		break;
+	case postproc_renderPassBlurH8:
+		break;
+	case postproc_renderPassBlurV8:
+		break;
+	}
 
 	// final display: activate desired final program and draw FSQ
 	if (currentDisplayFBO)
 	{
 		// determine if additional passes are required
 		// set appropriate display program
-		currentDemoProgram = demoState->prog_drawTexture;
+		currentDemoProgram = demoState->prog_drawTexture; // from last assignment
 		a3shaderProgramActivate(currentDemoProgram->program);
 
 		// done
@@ -491,13 +602,13 @@ void a3postproc_render(a3_DemoState const* demoState, a3_DemoMode1_PostProc cons
 	if ((demoState->displayGrid || demoState->displayTangentBases || demoState->displayWireframe) &&
 		renderPass != postproc_renderPassShadow)
 	{
-		// ****TO-DO:
+		// ****DONE:
 		//	-> uncomment overlay FBO activation and configuration
-	/*	// activate scene FBO and clear color; reuse depth
+		// activate scene FBO and clear color; reuse depth
 		currentWriteFBO = demoState->fbo_c16x4_d24s8;
 		a3framebufferActivate(currentWriteFBO);
 		glDisable(GL_STENCIL_TEST);
-		glClear(GL_COLOR_BUFFER_BIT);*/
+		glClear(GL_COLOR_BUFFER_BIT);
 
 		// draw grid aligned to world
 		if (demoState->displayGrid)
