@@ -553,24 +553,16 @@ void a3postproc_render(a3_DemoState const* demoState, a3_DemoMode1_PostProc cons
 			a3framebufferBindDepthTexture(currentDisplayFBO, a3tex_unit00);
 		break;
 	case postproc_renderPassDisplay:
-		break;
 	case postproc_renderPassBright2:
-		break;
 	case postproc_renderPassBlurH2:
-		break;
 	case postproc_renderPassBlurV2:
-		break;
 	case postproc_renderPassBright4:
-		break;
 	case postproc_renderPassBlurH4:
-		break;
 	case postproc_renderPassBlurV4:
-		break;
 	case postproc_renderPassBright8:
-		break;
 	case postproc_renderPassBlurH8:
-		break;
 	case postproc_renderPassBlurV8:
+		a3framebufferBindColorTexture(currentDisplayFBO, a3tex_unit00, renderTarget);
 		break;
 	}
 

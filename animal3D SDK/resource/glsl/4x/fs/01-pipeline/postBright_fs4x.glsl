@@ -39,8 +39,8 @@ void main()
 	//rtFragColor = vec4(1.0, 0.5, 0.0, 1.0);
 
 	vec3 vColor = texelFetch(hdr_image, 2 * ivec2(gl_FragCoord.xy), 0).rgb;
-	
+	float exposure = dot(vColor.rgb, vec3(0.2126, 0.7152, 0.0722));
 
-	rtFragColor.rgb = 1.0 - exp2(-vColor * vec3(0.2126, 0.7152, 0.0722));
+	rtFragColor.rgb = vColor * exposure;
 	rtFragColor.a = 1.0f;
 }
