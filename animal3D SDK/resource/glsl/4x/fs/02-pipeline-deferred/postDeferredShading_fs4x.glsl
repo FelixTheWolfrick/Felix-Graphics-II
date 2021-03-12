@@ -31,7 +31,7 @@
 //		except it happens on a plane, given images of the scene's geometric 
 //		data (the "g-buffers"); all of the information about the scene comes 
 //		from screen-sized textures, so use the texcoord varying as the UV
-//	-> declare point light data structure and uniform block
+//	-> declare point light data (still need) structure and uniform block
 //	-> declare pertinent samplers with geometry data ("g-buffers")
 //	-> use screen-space coord (the inbound UV) to sample g-buffers
 //	-> calculate view-space fragment position using depth sample
@@ -43,10 +43,67 @@ in vec4 vTexcoord_atlas;
 
 uniform int uCount;
 
+uniform sampler2D uImage00; // diffuse atlas
+uniform sampler2D uImage01; // specular atlas
+
+uniform sampler2D uImage04; // texcoord atlas
+uniform sampler2D uImage05; // normals atlas
+//uniform sampler2D uImage06; // position atlas
+uniform sampler2D uImage07; // depth atlas
+
+uniform mat4 uPB_inv; // inverse bias projection
+
+// testing
+uniform sampler2D uImage02, uImage03; // nrm, height
+
 layout (location = 0) out vec4 rtFragColor;
 
 void main()
 {
 	// DUMMY OUTPUT: all fragments are OPAQUE ORANGE
-	rtFragColor = vec4(1.0, 0.5, 0.0, 1.0);
+	//rtFragColor = vec4(1.0, 0.5, 0.0, 1.0);
+
+	vec4 sceneTexcoord = texture(uImage04, vTexcoord_atlas.xy);
+
+	vec4 diffuseSample = texture(uImage00, sceneTexcoord.xy);
+	vec4 specularSample = texture(uImage01, sceneTexcoord.xy);
+
+	vec4 position_screen = vTexcoord_atlas;
+	position_screen.z = texture(uImage07, vTexcoord_atlas.xy).r;
+
+	vec4 position_view = uPB_inv * position_screen;
+	position_view = position_view / position_view.w;
+
+	vec4 normal = texture(uImage05, vTexcoord_atlas.xy);
+	normal = (normal - 0.5) * 2.0;
+
+    // vec4 texcoordSample = texture(uImage04, vTexcoord_atlas.xy);
+	// vec4 normalSample = texture(uImage05, vTexcoord_atlas.xy);
+	// vec4 positionSample = texture(uImage06, vTexcoord_atlas.xy);
+	// vec4 depthSample = texture(uImage07, vTexcoord_atlas.xy);
+
+	// Phone shading:
+	// ambient
+	// + diffuse color * diffuse light
+	// + specular color * specular light
+	// have:
+	//  -> diffuse/specular colors
+	// need:
+	//	-> light stuff
+	//		-> light data -> light data struct -> uniform buffer
+	//		-> normals, position, depth -> gemometry buffers
+	//	-> texture coordinates -> g-buffer
+
+	// testing
+	// vec4 nrmSample = texture(uImage02, vTexcoord_atlas.xy);
+	// vec4 heightSample = texture(uImage03, vTexcoord_atlas.xy);
+
+	// DEBUGGING
+	//rtFragColor = vTexcoord_atlas;
+	rtFragColor = diffuseSample;
+	//rtFragColor = position_screen;
+	rtFragColor = position_view;
+
+	// final transparency
+	rtFragColor.z = diffuseSample.a;
 }
