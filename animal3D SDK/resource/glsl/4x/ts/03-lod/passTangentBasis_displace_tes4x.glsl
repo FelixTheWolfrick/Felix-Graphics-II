@@ -35,7 +35,18 @@
 
 layout (triangles, equal_spacing) in;
 
-void main()
+in vbVertexData_tess {
+	mat4 vTangentBasis_view;
+	vec4 vTexcoord_atlas;
+} vVertexData_tess[];
+
+out vbVertexData {
+	mat4 vTangentBasis_view;
+	vec4 vTexcoord_atlas;
+};
+
+void main() // triangle evaluation
 {
-	
+	// gl_TessCoord -> baycentric
+	// gl_Position = ??;
 }

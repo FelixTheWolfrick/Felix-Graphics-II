@@ -43,7 +43,7 @@ void a3curves_update_graphics(a3_DemoState* demoState, a3_DemoMode3_Curves* demo
 {
 	a3bufferRefillOffset(demoState->ubo_transform, 0, 0, sizeof(demoMode->modelMatrixStack), demoMode->modelMatrixStack);
 	a3bufferRefillOffset(demoState->ubo_light, 0, 0, sizeof(demoMode->pointLightData), demoMode->pointLightData);
-	a3bufferRefillOffset(demoState->ubo_curve, 0, 0, sizeof(demoMode->curveWaypoint), demoMode->curveWaypoint);
+	a3bufferRefillOffset(demoState->ubo_curve, 0, 0, sizeof(demoMode->curveWaypoint), demoMode->curveWaypoint); // waypoints are locations taht define the path
 	a3bufferRefillOffset(demoState->ubo_curve, 0, sizeof(demoMode->curveWaypoint), sizeof(demoMode->curveTangent), demoMode->curveTangent);
 }
 
@@ -60,6 +60,27 @@ void a3curves_update_animation(a3_DemoState* demoState, a3_DemoMode3_Curves* dem
 		//		(hint: check if we've surpassed the segment's duration)
 		// teapot follows curved path
 
+		// algorithm
+		// current time += delta time (change in time)
+		// if time >= duration
+		// time -= duration
+		// start waypoint = end waypoint
+		// end waypoint = (start waypoint + 1) % count
+		// u (unit value from a to b, 0 to 1) = time / duration = t * (1/duration)
+		// lerp a,b (u) = a + (b-a)u (i think you need this somewhere i kinda forgot)
+		int startPoint, endPoint;
+		float currentTime = demoMode->curveSegmentTime + demoMode->curveSegmentDuration;
+		if (currentTime >= demoMode->curveSegmentDuration)
+		{
+			demoMode->curveSegmentTime -= demoMode->curveSegmentDuration;
+			startPoint = demoMode->curveSegmentIndex;
+			endPoint = (startPoint + 1) % demoMode->curveWaypointCount;
+		}
+
+		float u = currentTime * (1 / demoMode->curveSegmentDuration);
+
+		float point = startPoint + (endPoint - startPoint) * u;
+		//sceneObjectData->position = projection matric here? * point;
 	}
 }
 
