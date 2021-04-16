@@ -34,11 +34,34 @@
 //		(hint: results can be stored in local variables named after the 
 //		complete tangent basis attributes provided before any changes)
 
+/*
 layout (location = 0) in vec4 aPosition;
 layout (location = 2) in vec3 aNormal;
 layout (location = 8) in vec4 aTexcoord;
 layout (location = 10) in vec3 aTangent;
 layout (location = 11) in vec3 aBitangent;
+*/
+
+// what is part of a single morph target:
+// -> position, normal, tangent
+// -> 16 available, 16 / 3 = 5 (int) 
+// -> 15 used up by morph targets, 1 left over for texcoord
+
+// what is not part of a single morph target:
+// -> texcoord - shared, pose is always same
+// -> bitangent - cross product (normal x tangent) 
+
+struct sMorphTarget
+{
+	vec4 position;
+	vec4 normal;
+	vec4 tangent;
+};
+
+layout (location = 0) in sMorphTarget aMorphTarget[5];
+
+// texcoord
+layout (location = 15) in vec4 aTexcoord; // last one
 
 struct sModelMatrixStack
 {
@@ -58,6 +81,8 @@ uniform ubTransformStack
 };
 uniform int uIndex;
 
+uniform float uTime; // 5 indexes to pull from for morph targets, index of target and percentage of lerping between 2
+
 out vbVertexData {
 	mat4 vTangentBasis_view;
 	vec4 vTexcoord_atlas;
@@ -71,6 +96,26 @@ void main()
 	// DUMMY OUTPUT: directly assign input position to output position
 	//gl_Position = aPosition;
 	
+	// results of morphing
+	vec4 aPosition;
+	vec3 aTangent, aBitangent, aNormal;
+
+	// testing: copy the first morph target only
+	//aPosition = aMorphTarget[0].position;
+	//aTangent = aMorphTarget[0].tangent.xyz;
+	//aNormal = aMorphTarget[0].normal.xyz;
+
+	//aBitangent = cross(aNormal, aTangent);
+
+	int uTimeInt = int(uTime); // time of current loop, between each morph 0-1
+	int index = uTimeInt % 5; // cant use 4 or else it only goes to 3
+	float param = uTime - uTimeInt; // between 0-1 used for lerping, time since the last frame/pose
+
+	aPosition = mix(aMorphTarget[index].position, aMorphTarget[(index + 1) % 5].position, param);
+	aTangent = mix(aMorphTarget[index].tangent, aMorphTarget[(index + 1) % 5].tangent, param).xyz;
+	aNormal = mix(aMorphTarget[index].normal, aMorphTarget[(index + 1) % 5].normal, param).xyz;
+	aBitangent = cross(aNormal, aTangent);
+
 	sModelMatrixStack t = uModelMatrixStack[uIndex];
 	
 	vTangentBasis_view = t.modelViewMatInverseTranspose * mat4(aTangent, 0.0, aBitangent, 0.0, aNormal, 0.0, vec4(0.0));
