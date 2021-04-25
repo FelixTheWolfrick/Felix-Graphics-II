@@ -2,12 +2,12 @@
 animal3D SDK and related course frameworks for spring 2021.
 
 # Project requirements checklist:
-1. N/A
-2. Bloom (?)
-3. Outline Renderer
-4. N/A
+1. Ability to change texture and color
+2. Bloom (Maybe?)
+3. Outline renderer
+4. Water-like animator
 5. N/A
-6. Unity Shaders
+6. Unity shaders
 
 # Project requirements: These count towards the implementation part of the project: 
 The project must include and integrate some elements of each of the main course units in some meaningful way: 
