@@ -8,6 +8,7 @@ Shader "Final/Basic_Shader"
 
 	SubShader // Actual shaders here
 	{
+
 		Pass
 		{
 			CGPROGRAM // Anything between CG and ENDCG is the shader language

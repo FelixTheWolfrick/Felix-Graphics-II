@@ -10,10 +10,13 @@ Shader "Final/Waves_Shader"
 
 	SubShader // Actual shaders here
 	{
-		Tags
-		{
-			"RenderType" = "transparent"
+		Tags {
+			"Queue" = "Transparent" 
+			"IgnoreProjector" = "True" 
+			"RednerType" = "Transparent"
 		}
+		ZWrite Off
+		Blend SrcAlpha OneMinusSrcAlpha // Makes it so you can see what's underneath when transparent
 
 		Pass
 		{

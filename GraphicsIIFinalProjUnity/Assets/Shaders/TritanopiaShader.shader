@@ -1,4 +1,4 @@
-Shader "Final/PostProcessingShader"
+Shader "Final/TritanopiaShader"
 {
     Properties
     {
@@ -39,11 +39,31 @@ Shader "Final/PostProcessingShader"
 
             sampler2D _MainTex;
 
-            fixed4 frag (v2f i) : SV_Target
+            const float4x4 _Tritanopia = float4x4(
+                0.97, 0.11, -0.08, 0.0,
+                0.02, 0.82, 0.16, 0.0,
+                -0.06, 0.88, 0.18, 0.0,
+                0.0, 0.0, 0.0, 1.0
+            );
+
+
+
+            float4 frag (v2f i) : SV_Target
             {
-                fixed4 col = tex2D(_MainTex, i.uv);
-                // just invert the colors
-                col.r = 0;
+                float4 col = tex2D(_MainTex, i.uv);
+                //col = _Tritanopia * col;
+                //col = mul(_Tritanopia, col);
+                //col = mul(col, _Tritanopia);
+
+                float1 col1 = 0.97 * 0.11 * -0.08;
+                float1 col2 = 0.02 * 0.82 * 0.16;
+                float1 col3 = -0.06 * 0.88 * 0.18;
+
+                //col.r = col.r * col1;
+                //col.g = col.g * tritanopia_B;
+                //col.b = col.b * tritanopia_C;
+                //col.a = col.a * tritanopia_D;
+
                 return col;
             }
             ENDCG
