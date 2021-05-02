@@ -5,3 +5,9 @@
 4. Outline renderer
 5. Water-like animator
 6. Inverse or Forward Kinematics
+
+# TO-DO:
+- Add Filter Effect
+- Add Outline Renderer
+- Add Inverse or Forward Kinematics 
+- Possibly Adjust Water Animation Shader
