@@ -13,7 +13,7 @@ Shader "Final/Waves_Shader"
 		Tags {
 			"Queue" = "Transparent" 
 			"IgnoreProjector" = "True" 
-			"RednerType" = "Transparent"
+			"RenderType" = "Transparent"
 		}
 		ZWrite Off
 		Blend SrcAlpha OneMinusSrcAlpha // Makes it so you can see what's underneath when transparent

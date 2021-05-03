@@ -9,6 +9,11 @@ Shader "Final/Basic_Shader"
 	SubShader // Actual shaders here
 	{
 
+			Tags{
+				"RenderType" = "Opaque"
+				"Queue" = "Geometry"
+			}
+
 		Pass
 		{
 			CGPROGRAM // Anything between CG and ENDCG is the shader language
@@ -44,7 +49,6 @@ Shader "Final/Basic_Shader"
 			float4 basicFragmentFunction(v2f IN) : SV_Target
 			{
 				float4 pixelColor = tex2D(_MainTexture, IN.uv);
-
 				return pixelColor * _Color;
 			}
 

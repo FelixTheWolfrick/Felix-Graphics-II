@@ -1,13 +1,16 @@
+# Carton Shaders Package
+Shaders designed to help make a game looke more cartoonish (things like thick outlines, cell shading etc.)
+
 # Project Includes:
-1. Shader to change texture + color (Included on all shaders)
-2. Toon Effect Shader
-3. Filter Effect (Sepia Filter implemented for ex.)
+1. Shader to change texture + color + transparency (Included on all shaders)
+2. Cel-Shade Shader
+3. Saturate/Contrast Controls
 4. Outline renderer
 5. Water-like animator
-6. Inverse or Forward Kinematics
+6. Grass Shader
 
 # TO-DO:
-- Add Filter Effect
-- Add Outline Renderer
-- Add Inverse or Forward Kinematics 
+- Add Grass Shader
 - Possibly Adjust Water Animation Shader
+
+# Resources:

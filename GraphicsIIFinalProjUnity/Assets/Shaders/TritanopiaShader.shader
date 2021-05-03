@@ -3,6 +3,7 @@ Shader "Final/TritanopiaShader"
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
+        _Strength("Strength", Range(0,1)) = 1
     }
     SubShader
     {
@@ -38,6 +39,7 @@ Shader "Final/TritanopiaShader"
             }
 
             sampler2D _MainTex;
+            float _Strength;
 
             const float4x4 _Tritanopia = float4x4(
                 0.97, 0.11, -0.08, 0.0,
@@ -51,20 +53,19 @@ Shader "Final/TritanopiaShader"
             float4 frag (v2f i) : SV_Target
             {
                 float4 col = tex2D(_MainTex, i.uv);
-                //col = _Tritanopia * col;
-                //col = mul(_Tritanopia, col);
-                //col = mul(col, _Tritanopia);
 
                 float1 col1 = 0.97 * 0.11 * -0.08;
                 float1 col2 = 0.02 * 0.82 * 0.16;
                 float1 col3 = -0.06 * 0.88 * 0.18;
 
-                //col.r = col.r * col1;
                 //col.g = col.g * tritanopia_B;
                 //col.b = col.b * tritanopia_C;
                 //col.a = col.a * tritanopia_D;
 
-                return col;
+                float4 colorBlind = mul(_Tritanopia, col);
+
+                return colorBlind;
+                //return lerp(col, colorBlind, _Strength);
             }
             ENDCG
         }
