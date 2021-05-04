@@ -10,16 +10,18 @@ Shader "Final/ToonSHader 1"
     }
         SubShader
         {
-            Tags { "RenderType" = "Opaque" }
+            Tags { "RenderType" = "Opaque" "LightMode" = "ForwardBase"}
+            Lighting On
             LOD 100
 
-            Pass
+            Pass // Lighting
             {
                 CGPROGRAM
                 #pragma vertex vert
                 #pragma fragment frag
 
                 #include "UnityCG.cginc"
+                #include "UnityLightingCommon.cginc"
 
                 struct appdata
                 {
@@ -43,8 +45,10 @@ Shader "Final/ToonSHader 1"
                 float _Detail;
 
                 float Toon(float3 normal, float3 lightDir) {
+                    //Product of normal & light direction
                     float NdotL = max(0.0,dot(normalize(normal), normalize(lightDir)));
 
+                    // Returns in sections
                     return floor(NdotL / _Detail);
                 }
 

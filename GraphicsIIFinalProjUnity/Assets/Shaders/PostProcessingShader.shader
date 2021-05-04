@@ -5,6 +5,7 @@ Shader "Final/PostProcessingShader"
         _MainTex ("Texture", 2D) = "white" {}
         _Saturate("Saturate", float) = 1
         _Contrast("Contrast", float) = 1
+        _Brightness("Brightness", float) = 1
     }
     SubShader
     {
@@ -42,10 +43,11 @@ Shader "Final/PostProcessingShader"
             sampler2D _MainTex;
             float _Saturate;
             float _Contrast;
+            float _Brightness;
 
             fixed4 frag (v2f i) : SV_Target
             {
-                fixed4 col = tex2D(_MainTex, i.uv) * _Saturate;
+                fixed4 col = tex2D(_MainTex, i.uv) * _Saturate * _Brightness;
                 fixed4 contrast = col * col;
                 fixed4 render = lerp(contrast, col, _Contrast);
                 return render;

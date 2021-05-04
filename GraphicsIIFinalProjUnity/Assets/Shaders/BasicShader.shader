@@ -13,6 +13,7 @@ Shader "Final/Basic_Shader"
 				"RenderType" = "Opaque"
 				"Queue" = "Geometry"
 			}
+			Blend SrcAlpha OneMinusSrcAlpha // Makes it so you can see what's underneath when transparent
 
 		Pass
 		{

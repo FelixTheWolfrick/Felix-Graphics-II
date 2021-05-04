@@ -57,15 +57,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\PostProcessingCamera.cs" />
-    <Compile Include="Assets\Scripts\SHaderDebug.cs" />
   </ItemGroup>
   <ItemGroup>
      <None Include="Assets\Shaders\WaveShader.shader" />
      <None Include="Assets\Shaders\ToonSHader 1.shader" />
      <None Include="Assets\Shaders\OutlineShader.shader" />
-     <None Include="Assets\Shaders\TritanopiaShader.shader" />
      <None Include="Assets\Shaders\PostProcessingShader.shader" />
-     <None Include="Assets\Shaders\ToonOutlineShader.shader" />
      <None Include="Assets\Shaders\BasicShader.shader" />
     <Reference Include="UnityEngine">
       <HintPath>E:\UnityHub\2020.3.0f1\Editor\Data\Managed\UnityEngine\UnityEngine.dll</HintPath>

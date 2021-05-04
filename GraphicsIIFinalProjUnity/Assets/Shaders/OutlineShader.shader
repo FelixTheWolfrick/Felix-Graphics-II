@@ -29,8 +29,11 @@ Shader "Final/OutlineShader"
     {
         v2f o;
         float4 newPos = v.vertex;
+
+        // Scale vertex by normal direction
         float3 normal = normalize(v.normal);
         newPos += float4(normal, 0.0) * _OutlineSize;
+        
         o.pos = UnityObjectToClipPos(newPos);
         o.color = _OutlineColor;
         return o;
